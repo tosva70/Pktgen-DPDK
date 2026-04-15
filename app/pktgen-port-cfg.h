@@ -111,7 +111,8 @@ typedef enum {
 /** Function pointer type for a port's TX handler. */
 typedef void (*tx_func_t)(struct port_info_s *info, uint16_t qid);
 
-#define RING_SIZE 1024          /**< Number of entries in the tail-latency ring buffer */
+#define RING_SIZE 1024 /**< Number of entries in the tail-latency ring buffer */
+
 #define ARP_REPLY_RING_SIZE 256 /**< Capacity of the per-port ARP reply ring */
 
 /** Ring buffer for recording tail-latency samples. */
@@ -222,9 +223,9 @@ typedef struct port_info_s {
     latency_t latency;                                  /**< Latency information */
     latsamp_stats_t latsamp_stats[MAX_QUEUES_PER_PORT]; /**< Per port stats */
     uint32_t latsamp_type;                              /**< Type of lat sampler  */
-    uint32_t latsamp_rate;        /**< Sampling rate i.e., samples per second  */
-    uint32_t latsamp_num_samples; /**< Number of samples to collect  */
-    char latsamp_outfile[256];    /**< Path to file for dumping latency samples */
+    uint32_t latsamp_rate;           /**< Sampling rate i.e., samples per second  */
+    uint32_t latsamp_num_samples;    /**< Number of samples to collect  */
+    char latsamp_outfile[256];       /**< Path to file for dumping latency samples */
     struct rte_ring *arp_reply_ring; /**< RX threads enqueue ARP replies, TX drains */
 } port_info_t;
 
