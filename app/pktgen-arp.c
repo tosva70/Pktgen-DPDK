@@ -193,7 +193,11 @@ pktgen_process_arp(struct rte_mbuf *m, uint32_t pid, uint32_t qid, uint32_t vlan
 
             m1->ol_flags = 0;
 
-            tx_send_packets(pinfo, qid, &m1, 1);
+            /* Enqueue the reply for the TX thread to send.  Enqueueing from
+             * the RX thread directly into rte_eth_tx_burst() on the TX queue
+             * would race with the TX lcore; the ring is the safe hand-off. */
+            if (rte_ring_mp_enqueue(pinfo->arp_reply_ring, m1) < 0)
+                rte_pktmbuf_free(m1);
             return;
         }
     } else if (arp->arp_opcode == htons(ARP_REPLY)) {

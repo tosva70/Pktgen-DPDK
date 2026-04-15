@@ -233,6 +233,13 @@ allocate_port_info(uint16_t pid)
     pktgen_log_info("   Checksum offload Pseudo-header required: %s",
                     pinfo->cksum_requires_phdr ? "Yes" : "No");
 
+    /* Create the MPSC ring used to hand ARP replies from RX threads to the TX thread */
+    char ring_name[64];
+    snprintf(ring_name, sizeof(ring_name), "arp_ring_%u", pid);
+    pinfo->arp_reply_ring = rte_ring_create(ring_name, ARP_REPLY_RING_SIZE, sid, RING_F_SC_DEQ);
+    if (pinfo->arp_reply_ring == NULL)
+        pktgen_log_panic("Unable to create ARP reply ring for port %u", pid);
+
     return pinfo;
 leave:
     if (pinfo) {
@@ -242,6 +249,7 @@ leave:
             rte_free(pq->rx_pkts);
             rte_free(pq->tx_pkts);
         }
+        rte_ring_free(pinfo->arp_reply_ring);
         rte_free(pinfo);
         l2p_set_port_pinfo(pid, NULL);
     }

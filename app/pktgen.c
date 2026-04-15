@@ -961,6 +961,14 @@ pktgen_main_transmit(port_info_t *pinfo, uint16_t qid)
 {
     uint16_t pid = pinfo->pid;
 
+    /* Drain ARP replies queued by RX threads.  Using rte_ring_sc_dequeue_burst
+     * is safe here because only this TX thread consumes the ring (RING_F_SC_DEQ). */
+    struct rte_mbuf *arp_pkts[16];
+    uint16_t nb_arp =
+        (uint16_t)rte_ring_sc_dequeue_burst(pinfo->arp_reply_ring, (void **)arp_pkts, 16, NULL);
+    if (nb_arp > 0)
+        tx_send_packets(pinfo, qid, arp_pkts, nb_arp);
+
     /* Transmit ARP/Ping packets if needed */
     pktgen_send_special(pinfo);
 
